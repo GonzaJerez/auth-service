@@ -18,12 +18,7 @@ export class AuthService {
   async login(loginDoctorDto: LoginUserDto) {
     const { email, password } = loginDoctorDto;
 
-    let user: User;
-    try {
-      user = await this.usersModel.findOne({ email });
-    } catch (error) {
-      console.log(error);
-    }
+    const user = await this.usersModel.findOne({ email });
 
     if (!user) {
       throw new NotFoundException('El usuario no existe');
@@ -62,10 +57,7 @@ export class AuthService {
     return this.jwtService.sign(payload);
   }
 
-  // TODO metodo para recibir doctores de sqs (nuevos, actualizaciones, seed) y guardarlos en db
   async handleMessage(users: User[]) {
-    console.log({ users });
-
     for (const user of users) {
       let userCreated = await this.usersModel.findByIdAndUpdate(
         user._id,
