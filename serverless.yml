@@ -1,0 +1,38 @@
+service: auth-service
+
+provider:
+  name: aws
+  region: sa-east-1
+  stage: prod
+  httpApi:
+    id: ${env:API_GATEWAY_ID}
+
+useDotenv: true
+
+package:
+  patterns:
+    - '!**/**'
+    - dist/**
+
+functions:
+  main:
+    handler: dist/main.handler
+    name: auth-service
+    runtime: nodejs20.x
+    timeout: 15
+    events:
+      - httpApi:
+          path: '/auth'
+          method: ANY
+      - httpApi:
+          path: '/auth/{proxy+}'
+          method: ANY
+      - sqs: ${env:AUTH_SQS_QUEUE_ARN}
+    environment:
+      NODE_ENV: prod
+      SERVER_MODE: serverless
+      MONGO_URI: ${env:MONGO_URI}
+      JWT_SECRET: ${env:JWT_SECRET}
+
+plugins:
+  - serverless-offline
